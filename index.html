@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mahjong Solitaire</title>
+    <style>
+        .board {
+            width: 400px;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 10px;
+        }
+        
+        .tile {
+            width: 80px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        
+        .tile.selected {
+            background: #ffff99;
+        }
+        
+        .tile.matched {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameBoard" class="board"></div>
+    <div style="text-align: center;">
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+
+    <script>
+        // Simple tile types (in a real game, there would be more variety)
+        const tileTypes = ['🐉', '🎍', '💮', '🌸', '🎋', '🍂'];
+        
+        class MahjongGame {
+            constructor() {
+                this.tiles = [];
+                this.selectedTile = null;
+                this.initializeBoard();
+            }
+
+            // Create a small 4x4 board with pairs
+            initializeBoard() {
+                // Create pairs of tiles
+                const pairs = tileTypes.slice(0, 8); // Use first 8 types
+                const gameTiles = [...pairs, ...pairs]; // Duplicate for pairs
+                
+                // Shuffle tiles
+                for (let i = gameTiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [gameTiles[i], gameTiles[j]] = [gameTiles[j], gameTiles[i]];
+                }
+
+                // Create tile elements
+                const board = document.getElementById('gameBoard');
+                board.innerHTML = '';
+                this.tiles = [];
+
+                gameTiles.forEach((symbol, index) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.textContent = symbol;
+                    tile.dataset.index = index;
+                    tile.addEventListener('click', () => this.handleTileClick(tile));
+                    board.appendChild(tile);
+                    this.tiles.push({ element: tile, symbol: symbol, matched: false });
+                });
+            }
+
+            handleTileClick(tile) {
+                const index = parseInt(tile.dataset.index);
+                const currentTile = this.tiles[index];
+
+                if (currentTile.matched || tile === this.selectedTile) return;
+
+                if (!this.selectedTile) {
+                    // First tile selected
+                    this.selectedTile = tile;
+                    tile.classList.add('selected');
+                } else {
+                    // Second tile selected
+                    const firstTile = this.tiles[this.selectedTile.dataset.index];
+                    const secondTile = currentTile;
+
+                    if (firstTile.symbol === secondTile.symbol) {
+                        // Match found
+                        firstTile.element.classList.add('matched');
+                        secondTile.element.classList.add('matched');
+                        firstTile.matched = true;
+                        secondTile.matched = true;
+                        
+                        this.checkWin();
+                    }
+
+                    // Reset selection
+                    this.selectedTile.classList.remove('selected');
+                    this.selectedTile = null;
+                    tile.classList.remove('selected');
+                }
+            }
+
+            checkWin() {
+                if (this.tiles.every(tile => tile.matched)) {
+                    setTimeout(() => alert('Congratulations! You won!'), 500);
+                }
+            }
+        }
+
+        let game;
+        
+        function startGame() {
+            game = new MahjongGame();
+        }
+
+        function resetGame() {
+            startGame();
+        }
+
+        // Start the game when page loads
+        window.onload = startGame;
+    </script>
+</body>
+</html>
