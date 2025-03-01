@@ -4,11 +4,10 @@
     <title>Mahjong Solitaire</title>
     <style>
         .board {
-            width: 400px;
+            width: 700px;
+            height: 600px;
             margin: 20px auto;
-            display: grid;
-            grid-template-columns: repeat(4, 80px);
-            gap: 10px;
+            position: relative;
         }
         
         .tile {
@@ -21,6 +20,8 @@
             justify-content: center;
             cursor: pointer;
             font-size: 24px;
+            position: absolute;
+            transition: opacity 0.3s;
         }
         
         .tile.selected {
@@ -28,7 +29,13 @@
         }
         
         .tile.matched {
-            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .tile.blocked {
+            background: #d0d0d0;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -39,9 +46,13 @@
     </div>
 
     <script>
-        // Simple tile types (in a real game, there would be more variety)
-        const tileTypes = ['🐉', '🎍', '💮', '🌸', '🎋', '🍂'];
-        
+        // Tile types (18 unique symbols, each appearing twice)
+        const tileTypes = [
+            '🐉', '🎍', '💮', '🌸', '🎋', '🍂',
+            '🀄', '🌟', '☯️', '🍃', '🌹', '🐅',
+            '⛰️', '🌊', '☀️', '🌙', '🐍', '🎏'
+        ];
+
         class MahjongGame {
             constructor() {
                 this.tiles = [];
@@ -49,12 +60,29 @@
                 this.initializeBoard();
             }
 
-            // Create a small 4x4 board with pairs
+            // Define a simple pyramid-like layered layout
             initializeBoard() {
-                // Create pairs of tiles
-                const pairs = tileTypes.slice(0, 8); // Use first 8 types
-                const gameTiles = [...pairs, ...pairs]; // Duplicate for pairs
-                
+                const layout = [
+                    // Layer 0 (bottom): 8 tiles
+                    { x: 1, y: 4, z: 0 }, { x: 2, y: 4, z: 0 }, { x: 3, y: 4, z: 0 }, { x: 4, y: 4, z: 0 },
+                    { x: 5, y: 4, z: 0 }, { x: 6, y: 4, z: 0 }, { x: 7, y: 4, z: 0 }, { x: 8, y: 4, z: 0 },
+                    // Layer 0 sides
+                    { x: 0, y: 3, z: 0 }, { x: 9, y: 3, z: 0 },
+                    // Layer 1: 6 tiles
+                    { x: 2, y: 3, z: 1 }, { x: 3, y: 3, z: 1 }, { x: 4, y: 3, z: 1 },
+                    { x: 5, y: 3, z: 1 }, { x: 6, y: 3, z: 1 }, { x: 7, y: 3, z: 1 },
+                    // Layer 2: 4 tiles
+                    { x: 3, y: 2, z: 2 }, { x: 4, y: 2, z: 2 }, { x: 5, y: 2, z: 2 }, { x: 6, y: 2, z: 2 },
+                    // Layer 3: 2 tiles
+                    { x: 4, y: 1, z: 3 }, { x: 5, y: 1, z: 3 },
+                    // Layer 4 (top): 1 tile
+                    { x: 4.5, y: 0, z: 4 }
+                ];
+
+                // Prepare tiles (use only as many pairs as layout positions: 21 tiles = 10 pairs + 1 extra)
+                const selectedTypes = tileTypes.slice(0, 11); // 11 unique tiles
+                let gameTiles = [...selectedTypes, ...selectedTypes.slice(0, 10)]; // 21 tiles (10 pairs + 1)
+
                 // Shuffle tiles
                 for (let i = gameTiles.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -67,13 +95,54 @@
                 this.tiles = [];
 
                 gameTiles.forEach((symbol, index) => {
+                    const pos = layout[index];
                     const tile = document.createElement('div');
                     tile.className = 'tile';
                     tile.textContent = symbol;
                     tile.dataset.index = index;
+                    tile.style.left = `${pos.x * 70}px`; // Adjusted spacing
+                    tile.style.top = `${pos.y * 90}px`;
+                    tile.style.zIndex = pos.z * 10;
                     tile.addEventListener('click', () => this.handleTileClick(tile));
                     board.appendChild(tile);
-                    this.tiles.push({ element: tile, symbol: symbol, matched: false });
+                    this.tiles.push({
+                        element: tile,
+                        symbol: symbol,
+                        matched: false,
+                        x: pos.x,
+                        y: pos.y,
+                        z: pos.z
+                    });
+                });
+
+                this.updateTileStates();
+            }
+
+            // Check if a tile is free (no tiles to its left/right AND no tile above)
+            isTileFree(tile) {
+                const leftBlocked = this.tiles.some(t => 
+                    !t.matched && t.z === tile.z && t.x === tile.x - 1 && t.y === tile.y
+                );
+                const rightBlocked = this.tiles.some(t => 
+                    !t.matched && t.z === tile.z && t.x === tile.x + 1 && t.y === tile.y
+                );
+                const aboveBlocked = this.tiles.some(t => 
+                    !t.matched && t.z > tile.z && t.x >= tile.x - 0.5 && t.x <= tile.x + 0.5 && t.y <= tile.y
+                );
+
+                return !leftBlocked && !rightBlocked && !aboveBlocked;
+            }
+
+            // Update which tiles are clickable
+            updateTileStates() {
+                this.tiles.forEach(tile => {
+                    if (!tile.matched) {
+                        if (this.isTileFree(tile)) {
+                            tile.element.classList.remove('blocked');
+                        } else {
+                            tile.element.classList.add('blocked');
+                        }
+                    }
                 });
             }
 
@@ -81,7 +150,7 @@
                 const index = parseInt(tile.dataset.index);
                 const currentTile = this.tiles[index];
 
-                if (currentTile.matched || tile === this.selectedTile) return;
+                if (currentTile.matched || !this.isTileFree(currentTile) || tile === this.selectedTile) return;
 
                 if (!this.selectedTile) {
                     // First tile selected
@@ -99,6 +168,7 @@
                         firstTile.matched = true;
                         secondTile.matched = true;
                         
+                        this.updateTileStates();
                         this.checkWin();
                     }
 
