@@ -4,10 +4,11 @@
     <title>Mahjong Solitaire</title>
     <style>
         .board {
-            width: 700px;
+            width: 900px;
             height: 600px;
             margin: 20px auto;
             position: relative;
+            background: #f5f5f5;
         }
         
         .tile {
@@ -46,11 +47,10 @@
     </div>
 
     <script>
-        // Tile types (18 unique symbols, each appearing twice)
+        // Tile types (14 unique symbols, each appearing twice for 28 tiles)
         const tileTypes = [
-            '🐉', '🎍', '💮', '🌸', '🎋', '🍂',
-            '🀄', '🌟', '☯️', '🍃', '🌹', '🐅',
-            '⛰️', '🌊', '☀️', '🌙', '🐍', '🎏'
+            '🐉', '🎍', '💮', '🌸', '🎋', '🍂', '🀄',
+            '🌟', '☯️', '🍃', '🌹', '🐅', '⛰️', '🌊'
         ];
 
         class MahjongGame {
@@ -60,28 +60,25 @@
                 this.initializeBoard();
             }
 
-            // Define a simple pyramid-like layered layout
+            // Define a simple pyramid layout with 28 tiles (14 pairs)
             initializeBoard() {
                 const layout = [
-                    // Layer 0 (bottom): 8 tiles
-                    { x: 1, y: 4, z: 0 }, { x: 2, y: 4, z: 0 }, { x: 3, y: 4, z: 0 }, { x: 4, y: 4, z: 0 },
-                    { x: 5, y: 4, z: 0 }, { x: 6, y: 4, z: 0 }, { x: 7, y: 4, z: 0 }, { x: 8, y: 4, z: 0 },
-                    // Layer 0 sides
-                    { x: 0, y: 3, z: 0 }, { x: 9, y: 3, z: 0 },
-                    // Layer 1: 6 tiles
-                    { x: 2, y: 3, z: 1 }, { x: 3, y: 3, z: 1 }, { x: 4, y: 3, z: 1 },
-                    { x: 5, y: 3, z: 1 }, { x: 6, y: 3, z: 1 }, { x: 7, y: 3, z: 1 },
-                    // Layer 2: 4 tiles
-                    { x: 3, y: 2, z: 2 }, { x: 4, y: 2, z: 2 }, { x: 5, y: 2, z: 2 }, { x: 6, y: 2, z: 2 },
-                    // Layer 3: 2 tiles
-                    { x: 4, y: 1, z: 3 }, { x: 5, y: 1, z: 3 },
-                    // Layer 4 (top): 1 tile
-                    { x: 4.5, y: 0, z: 4 }
+                    // Layer 0 (bottom): 10 tiles
+                    { x: 2, y: 4, z: 0 }, { x: 3, y: 4, z: 0 }, { x: 4, y: 4, z: 0 }, { x: 5, y: 4, z: 0 },
+                    { x: 6, y: 4, z: 0 }, { x: 7, y: 4, z: 0 }, { x: 8, y: 4, z: 0 }, { x: 9, y: 4, z: 0 },
+                    { x: 1, y: 4, z: 0 }, { x: 10, y: 4, z: 0 },
+                    // Layer 1: 8 tiles
+                    { x: 2.5, y: 3, z: 1 }, { x: 3.5, y: 3, z: 1 }, { x: 4.5, y: 3, z: 1 }, { x: 5.5, y: 3, z: 1 },
+                    { x: 6.5, y: 3, z: 1 }, { x: 7.5, y: 3, z: 1 }, { x: 2, y: 3, z: 1 }, { x: 8, y: 3, z: 1 },
+                    // Layer 2: 6 tiles
+                    { x: 3, y: 2, z: 2 }, { x: 4, y: 2, z: 2 }, { x: 5, y: 2, z: 2 },
+                    { x: 6, y: 2, z: 2 }, { x: 3.5, y: 2, z: 2 }, { x: 5.5, y: 2, z: 2 },
+                    // Layer 3: 4 tiles
+                    { x: 4, y: 1, z: 3 }, { x: 5, y: 1, z: 3 }, { x: 4.5, y: 1, z: 3 }, { x: 3.5, y: 1, z: 3 }
                 ];
 
-                // Prepare tiles (use only as many pairs as layout positions: 21 tiles = 10 pairs + 1 extra)
-                const selectedTypes = tileTypes.slice(0, 11); // 11 unique tiles
-                let gameTiles = [...selectedTypes, ...selectedTypes.slice(0, 10)]; // 21 tiles (10 pairs + 1)
+                // Prepare tiles: 14 pairs = 28 tiles
+                const gameTiles = [...tileTypes, ...tileTypes]; // Duplicate for pairs
 
                 // Shuffle tiles
                 for (let i = gameTiles.length - 1; i > 0; i--) {
@@ -94,13 +91,13 @@
                 board.innerHTML = '';
                 this.tiles = [];
 
-                gameTiles.forEach((symbol, index) => {
-                    const pos = layout[index];
+                layout.forEach((pos, index) => {
+                    const symbol = gameTiles[index];
                     const tile = document.createElement('div');
                     tile.className = 'tile';
                     tile.textContent = symbol;
                     tile.dataset.index = index;
-                    tile.style.left = `${pos.x * 70}px`; // Adjusted spacing
+                    tile.style.left = `${pos.x * 80}px`; // Adjusted spacing
                     tile.style.top = `${pos.y * 90}px`;
                     tile.style.zIndex = pos.z * 10;
                     tile.addEventListener('click', () => this.handleTileClick(tile));
@@ -127,7 +124,8 @@
                     !t.matched && t.z === tile.z && t.x === tile.x + 1 && t.y === tile.y
                 );
                 const aboveBlocked = this.tiles.some(t => 
-                    !t.matched && t.z > tile.z && t.x >= tile.x - 0.5 && t.x <= tile.x + 0.5 && t.y <= tile.y
+                    !t.matched && t.z > tile.z && 
+                    t.x >= tile.x - 0.5 && t.x <= tile.x + 0.5 && t.y <= tile.y
                 );
 
                 return !leftBlocked && !rightBlocked && !aboveBlocked;
