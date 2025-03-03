@@ -42,10 +42,12 @@
         .tile.layer-1 { background: #e6e6e6; box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.4); }
         .tile.layer-2 { background: #f2f2f2; box-shadow: 6px 6px 18px rgba(0, 0, 0, 0.5); }
         .tile.layer-3 { background: #fafafa; box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.6); }
+        .tile.layer-4 { background: #fefefe; box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.7); }
+        .tile.layer-5 { background: #ffffff; box-shadow: 12px 12px 36px rgba(0, 0, 0, 0.8); }
         
         .tile.selected {
             background: #ffff99 !important;
-            transform: scale(1.05) translateZ(80px) !important;
+            transform: scale(1.05) translateZ(120px) !important;
         }
         
         .tile.matched {
@@ -70,11 +72,12 @@
     </div>
 
     <script>
-        // Tile types (36 unique symbols, each appearing twice for 72 tiles)
+        // Tile types (54 unique symbols, each appearing twice for 108 tiles)
         const tileTypes = [
             '🐉', '🎍', '💮', '🌸', '🎋', '🍂', '🀄', '🌟', '☯️', '🍃', '🌹', '🐅', '⛰️', '🌊', '☀️', '🌙',
             '🐍', '🎏', '🐘', '🌴', '🍎', '🍇', '🌺', '🍀', '🐳', '🦋', '🐢', '🍁', '🌈', '🐙', '🌻', '🍉',
-            '🐝', '🌼', '🍊', '🐠'
+            '🐝', '🌼', '🍊', '🐠', '🍒', '🐸', '🌾', '🍍', '🐦', '🌵', '🍓', '🐷', '🌷', '🍋', '🐟', '🌿',
+            '🍑', '🐰', '🌑', '🍅', '🐴', '🌳'
         ];
 
         class MahjongGame {
@@ -86,26 +89,36 @@
 
             initializeBoard() {
                 const layout = [
-                    // Layer 0: 36 tiles (12x3 base), centered
-                    { x: 1, y: 2, z: 0 }, { x: 2, y: 2, z: 0 }, { x: 3, y: 2, z: 0 }, { x: 4, y: 2, z: 0 }, { x: 5, y: 2, z: 0 }, { x: 6, y: 2, z: 0 },
-                    { x: 7, y: 2, z: 0 }, { x: 8, y: 2, z: 0 }, { x: 9, y: 2, z: 0 }, { x: 10, y: 2, z: 0 }, { x: 11, y: 2, z: 0 }, { x: 12, y: 2, z: 0 },
-                    { x: 1, y: 4, z: 0 }, { x: 2, y: 4, z: 0 }, { x: 3, y: 4, z: 0 }, { x: 4, y: 4, z: 0 }, { x: 5, y: 4, z: 0 }, { x: 6, y: 4, z: 0 },
-                    { x: 7, y: 4, z: 0 }, { x: 8, y: 4, z: 0 }, { x: 9, y: 4, z: 0 }, { x: 10, y: 4, z: 0 }, { x: 11, y: 4, z: 0 }, { x: 12, y: 4, z: 0 },
-                    { x: 1, y: 6, z: 0 }, { x: 2, y: 6, z: 0 }, { x: 3, y: 6, z: 0 }, { x: 4, y: 6, z: 0 }, { x: 5, y: 6, z: 0 }, { x: 6, y: 6, z: 0 },
-                    { x: 7, y: 6, z: 0 }, { x: 8, y: 6, z: 0 }, { x: 9, y: 6, z: 0 }, { x: 10, y: 6, z: 0 }, { x: 11, y: 6, z: 0 }, { x: 12, y: 6, z: 0 },
-                    // Layer 1: 20 tiles (10x2)
-                    { x: 1.5, y: 3, z: 1 }, { x: 2.5, y: 3, z: 1 }, { x: 3.5, y: 3, z: 1 }, { x: 4.5, y: 3, z: 1 }, { x: 5.5, y: 3, z: 1 },
-                    { x: 6.5, y: 3, z: 1 }, { x: 7.5, y: 3, z: 1 }, { x: 8.5, y: 3, z: 1 }, { x: 9.5, y: 3, z: 1 }, { x: 10.5, y: 3, z: 1 },
-                    { x: 1.5, y: 5, z: 1 }, { x: 2.5, y: 5, z: 1 }, { x: 3.5, y: 5, z: 1 }, { x: 4.5, y: 5, z: 1 }, { x: 5.5, y: 5, z: 1 },
-                    { x: 6.5, y: 5, z: 1 }, { x: 7.5, y: 5, z: 1 }, { x: 8.5, y: 5, z: 1 }, { x: 9.5, y: 5, z: 1 }, { x: 10.5, y: 5, z: 1 },
-                    // Layer 2: 12 tiles (6x2)
-                    { x: 3, y: 3.5, z: 2 }, { x: 4, y: 3.5, z: 2 }, { x: 5, y: 3.5, z: 2 }, { x: 6, y: 3.5, z: 2 }, { x: 7, y: 3.5, z: 2 }, { x: 8, y: 3.5, z: 2 },
-                    { x: 3, y: 4.5, z: 2 }, { x: 4, y: 4.5, z: 2 }, { x: 5, y: 4.5, z: 2 }, { x: 6, y: 4.5, z: 2 }, { x: 7, y: 4.5, z: 2 }, { x: 8, y: 4.5, z: 2 },
-                    // Layer 3: 4 tiles (4x1 top)
-                    { x: 4.5, y: 4, z: 3 }, { x: 5.5, y: 4, z: 3 }, { x: 6.5, y: 4, z: 3 }, { x: 7.5, y: 4, z: 3 }
+                    // Layer 0: 48 tiles (12x4 base), centered
+                    { x: 1, y: 1, z: 0 }, { x: 2, y: 1, z: 0 }, { x: 3, y: 1, z: 0 }, { x: 4, y: 1, z: 0 }, { x: 5, y: 1, z: 0 }, { x: 6, y: 1, z: 0 },
+                    { x: 7, y: 1, z: 0 }, { x: 8, y: 1, z: 0 }, { x: 9, y: 1, z: 0 }, { x: 10, y: 1, z: 0 }, { x: 11, y: 1, z: 0 }, { x: 12, y: 1, z: 0 },
+                    { x: 1, y: 3, z: 0 }, { x: 2, y: 3, z: 0 }, { x: 3, y: 3, z: 0 }, { x: 4, y: 3, z: 0 }, { x: 5, y: 3, z: 0 }, { x: 6, y: 3, z: 0 },
+                    { x: 7, y: 3, z: 0 }, { x: 8, y: 3, z: 0 }, { x: 9, y: 3, z: 0 }, { x: 10, y: 3, z: 0 }, { x: 11, y: 3, z: 0 }, { x: 12, y: 3, z: 0 },
+                    { x: 1, y: 5, z: 0 }, { x: 2, y: 5, z: 0 }, { x: 3, y: 5, z: 0 }, { x: 4, y: 5, z: 0 }, { x: 5, y: 5, z: 0 }, { x: 6, y: 5, z: 0 },
+                    { x: 7, y: 5, z: 0 }, { x: 8, y: 5, z: 0 }, { x: 9, y: 5, z: 0 }, { x: 10, y: 5, z: 0 }, { x: 11, y: 5, z: 0 }, { x: 12, y: 5, z: 0 },
+                    { x: 1, y: 7, z: 0 }, { x: 2, y: 7, z: 0 }, { x: 3, y: 7, z: 0 }, { x: 4, y: 7, z: 0 }, { x: 5, y: 7, z: 0 }, { x: 6, y: 7, z: 0 },
+                    { x: 7, y: 7, z: 0 }, { x: 8, y: 7, z: 0 }, { x: 9, y: 7, z: 0 }, { x: 10, y: 7, z: 0 }, { x: 11, y: 7, z: 0 }, { x: 12, y: 7, z: 0 },
+                    // Layer 1: 30 tiles (10x3)
+                    { x: 1.5, y: 1.5, z: 1 }, { x: 2.5, y: 1.5, z: 1 }, { x: 3.5, y: 1.5, z: 1 }, { x: 4.5, y: 1.5, z: 1 }, { x: 5.5, y: 1.5, z: 1 },
+                    { x: 6.5, y: 1.5, z: 1 }, { x: 7.5, y: 1.5, z: 1 }, { x: 8.5, y: 1.5, z: 1 }, { x: 9.5, y: 1.5, z: 1 }, { x: 10.5, y: 1.5, z: 1 },
+                    { x: 1.5, y: 4, z: 1 }, { x: 2.5, y: 4, z: 1 }, { x: 3.5, y: 4, z: 1 }, { x: 4.5, y: 4, z: 1 }, { x: 5.5, y: 4, z: 1 },
+                    { x: 6.5, y: 4, z: 1 }, { x: 7.5, y: 4, z: 1 }, { x: 8.5, y: 4, z: 1 }, { x: 9.5, y: 4, z: 1 }, { x: 10.5, y: 4, z: 1 },
+                    { x: 1.5, y: 6.5, z: 1 }, { x: 2.5, y: 6.5, z: 1 }, { x: 3.5, y: 6.5, z: 1 }, { x: 4.5, y: 6.5, z: 1 }, { x: 5.5, y: 6.5, z: 1 },
+                    { x: 6.5, y: 6.5, z: 1 }, { x: 7.5, y: 6.5, z: 1 }, { x: 8.5, y: 6.5, z: 1 }, { x: 9.5, y: 6.5, z: 1 }, { x: 10.5, y: 6.5, z: 1 },
+                    // Layer 2: 20 tiles (10x2)
+                    { x: 1.5, y: 2, z: 2 }, { x: 2.5, y: 2, z: 2 }, { x: 3.5, y: 2, z: 2 }, { x: 4.5, y: 2, z: 2 }, { x: 5.5, y: 2, z: 2 },
+                    { x: 6.5, y: 2, z: 2 }, { x: 7.5, y: 2, z: 2 }, { x: 8.5, y: 2, z: 2 }, { x: 9.5, y: 2, z: 2 }, { x: 10.5, y: 2, z: 2 },
+                    { x: 1.5, y: 6, z: 2 }, { x: 2.5, y: 6, z: 2 }, { x: 3.5, y: 6, z: 2 }, { x: 4.5, y: 6, z: 2 }, { x: 5.5, y: 6, z: 2 },
+                    { x: 6.5, y: 6, z: 2 }, { x: 7.5, y: 6, z: 2 }, { x: 8.5, y: 6, z: 2 }, { x: 9.5, y: 6, z: 2 }, { x: 10.5, y: 6, z: 2 },
+                    // Layer 3: 6 tiles (6x1)
+                    { x: 4, y: 4, z: 3 }, { x: 5, y: 4, z: 3 }, { x: 6, y: 4, z: 3 }, { x: 7, y: 4, z: 3 }, { x: 8, y: 4, z: 3 }, { x: 9, y: 4, z: 3 },
+                    // Layer 4: 2 tiles (2x1)
+                    { x: 5.5, y: 4, z: 4 }, { x: 6.5, y: 4, z: 4 },
+                    // Layer 5: 2 tiles (top)
+                    { x: 6, y: 3.75, z: 5 }, { x: 6, y: 4.25, z: 5 }
                 ];
 
-                // Prepare tiles: 36 pairs = 72 tiles
+                // Prepare tiles: 54 pairs = 108 tiles
                 let gameTiles = [...tileTypes, ...tileTypes];
 
                 // Shuffle tiles
@@ -148,7 +161,7 @@
             ensureSolvable() {
                 let freeTiles = this.tiles.filter(tile => !tile.matched && this.isTileFree(tile));
                 let attempts = 0;
-                const maxAttempts = 200; // Increased attempts for larger layout
+                const maxAttempts = 300; // Increased for larger layout
 
                 while (freeTiles.length > 0 && !this.hasFreeMatches(freeTiles) && attempts < maxAttempts) {
                     const freeTile = freeTiles[Math.floor(Math.random() * freeTiles.length)];
@@ -198,8 +211,7 @@
                     }
                 });
 
-                // Ensure solvability after each update
-                this.ensureSolvable();
+                this.ensureSolvable(); // Ensure solvability after each move
             }
 
             handleTileClick(tile) {
